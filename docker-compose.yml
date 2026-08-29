@@ -42,8 +42,10 @@ services:
       # Generated clips/downloaded source videos must persist across
       # container restarts and rebuilds.
       - storage:/app/storage
-    ports:
-      - "8000:8000"
+    # No host port published here by default -- the frontend's nginx already
+    # proxies /api to this service over the internal compose network, so
+    # there's no need to expose the backend directly. docker-compose.dev.yml
+    # adds "8000:8000" back for local development/debugging convenience.
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 15s
@@ -60,6 +62,12 @@ services:
       - backend
     ports:
       - "80:80"
+    # NOTE: docker-compose merges `ports:` lists across -f files by
+    # concatenation, not replacement. An override that needs a *different*
+    # host port for this service (e.g. because 80 is already taken by
+    # something else on the host) must use `ports: !override [...]`, not a
+    # plain `ports: [...]` -- otherwise both mappings get applied and Docker
+    # will fail to start the container if either port is unavailable.
 
 volumes:
   postgres_data:

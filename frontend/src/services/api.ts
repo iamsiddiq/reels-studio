@@ -1,7 +1,12 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios';
 
-const baseURL: string =
-  (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8000/api/v1';
+// Vite bakes VITE_API_URL in at *build* time, not container runtime. Local
+// dev (docker-compose.dev.yml / frontend/.env.example) sets it explicitly to
+// an absolute http://localhost:8000/api/v1. In a production build there is
+// no VITE_API_URL in the build context, so it falls back to a relative path
+// -- correct because nginx.conf proxies /api to the backend on the same
+// origin, whatever public domain/IP that ends up being.
+const baseURL: string = (import.meta.env.VITE_API_URL as string | undefined) ?? '/api/v1';
 
 const api: AxiosInstance = axios.create({
   baseURL,

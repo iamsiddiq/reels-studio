@@ -6,6 +6,7 @@ from typing import Any, Self
 import pytest
 import yt_dlp
 
+from app.config import settings
 from app.exceptions import ProcessingError
 from app.services.youtube_downloader import download_youtube_video
 
@@ -122,3 +123,41 @@ class TestDownloadYoutubeVideo:
         file_path, _title, _duration = download_youtube_video("https://youtu.be/short1", tmp_path)
 
         assert file_path.exists()
+
+    def test_uses_cookiefile_when_configured_and_present(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        cookies_path = tmp_path / "cookies.txt"
+        cookies_path.write_text("# Netscape HTTP Cookie File\n")
+        monkeypatch.setattr(settings, "YT_DLP_COOKIES_FILE", str(cookies_path))
+
+        info = {"id": "cookie1", "ext": "mp4", "title": "Cookie Video", "duration": 1.0}
+        captured: dict[str, Any] = {}
+
+        def fake_ydl_factory(opts: dict[str, Any]) -> _FakeYoutubeDL:
+            captured["opts"] = opts
+            return _FakeYoutubeDL(opts, info=info)
+
+        monkeypatch.setattr(yt_dlp, "YoutubeDL", fake_ydl_factory)
+
+        download_youtube_video(VALID_URL, tmp_path)
+
+        assert captured["opts"]["cookiefile"] == str(cookies_path)
+
+    def test_omits_cookiefile_when_configured_path_does_not_exist(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(settings, "YT_DLP_COOKIES_FILE", str(tmp_path / "does_not_exist.txt"))
+
+        info = {"id": "nocookie", "ext": "mp4", "title": "No Cookie Video", "duration": 1.0}
+        captured: dict[str, Any] = {}
+
+        def fake_ydl_factory(opts: dict[str, Any]) -> _FakeYoutubeDL:
+            captured["opts"] = opts
+            return _FakeYoutubeDL(opts, info=info)
+
+        monkeypatch.setattr(yt_dlp, "YoutubeDL", fake_ydl_factory)
+
+        download_youtube_video(VALID_URL, tmp_path)
+
+        assert "cookiefile" not in captured["opts"]

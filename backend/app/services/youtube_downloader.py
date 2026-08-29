@@ -55,7 +55,19 @@ def download_youtube_video(url: str, dest_dir: Path) -> tuple[Path, str, float]:
         # Pin the same ffmpeg binary the rest of the pipeline uses for muxing,
         # instead of silently falling back to whatever "ffmpeg" resolves to on PATH.
         "ffmpeg_location": settings.FFMPEG_PATH,
+        # The default "web" player client increasingly triggers YouTube's
+        # "Sign in to confirm you're not a bot" check for requests coming
+        # from datacenter/VPS IP ranges. The android/ios clients use a
+        # different (non-browser) auth flow that isn't subject to that
+        # check, so try them first and only fall back to web.
+        "extractor_args": {"youtube": {"player_client": ["android", "ios", "web"]}},
     }
+
+    if settings.YT_DLP_COOKIES_FILE and Path(settings.YT_DLP_COOKIES_FILE).exists():
+        # Required in practice on most cloud/VPS IP ranges as of 2026 --
+        # YouTube's bot-check increasingly rejects even the android/ios
+        # client fallback above without a real logged-in session's cookies.
+        ydl_opts["cookiefile"] = settings.YT_DLP_COOKIES_FILE
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:

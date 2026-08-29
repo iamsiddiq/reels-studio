@@ -33,6 +33,12 @@ class Settings(BaseSettings):
     # Reject source videos longer than this before transcription/rendering,
     # since both are O(duration) CPU work with no queue/concurrency cap yet.
     MAX_VIDEO_DURATION_SECONDS: float = 2400.0  # 40 minutes
+    # Optional path to a Netscape-format cookies.txt exported from a logged-in
+    # YouTube session. Increasingly required for yt-dlp to work at all from
+    # datacenter/VPS IP ranges, which YouTube's bot-check targets heavily.
+    # Left unset, downloads are attempted without cookies (fine on residential
+    # IPs, often blocked on cloud hosts).
+    YT_DLP_COOKIES_FILE: str | None = None
 
     # --- Highlight selection (OpenAI) ---
     # When set, highlight_detector.py uses OpenAI to semantically pick the
