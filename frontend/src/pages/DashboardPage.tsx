@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
-import { AlertCircle, Clapperboard, Database, Loader2, PlusCircle, Video } from 'lucide-react';
+import { AlertCircle, Database, LayoutDashboard, PlusCircle, Video, Clapperboard as ClapperboardIcon, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getStats } from '@/services/dashboardService';
@@ -13,6 +14,7 @@ interface StatDefinition {
   label: string;
   icon: typeof Video;
   format: (value: number) => string;
+  tint: string;
 }
 
 const STAT_DEFINITIONS: StatDefinition[] = [
@@ -21,18 +23,21 @@ const STAT_DEFINITIONS: StatDefinition[] = [
     label: 'Videos Processed',
     icon: Video,
     format: (value) => value.toLocaleString(),
+    tint: 'bg-primary/10 text-primary',
   },
   {
     key: 'clips_generated',
     label: 'Clips Generated',
-    icon: Clapperboard,
+    icon: ClapperboardIcon,
     format: (value) => value.toLocaleString(),
+    tint: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
   },
   {
     key: 'storage_used_mb',
     label: 'Storage Used',
     icon: Database,
     format: (value) => `${value.toLocaleString(undefined, { maximumFractionDigits: 1 })} MB`,
+    tint: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
   },
 ];
 
@@ -67,20 +72,19 @@ export default function DashboardPage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="mx-auto max-w-5xl px-4 py-12"
+      className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12"
     >
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="mt-2 text-muted-foreground">
-            Videos processed, clips generated, and storage usage at a glance.
-          </p>
-        </div>
-        <Button render={<Link to="/new" />}>
-          <PlusCircle className="size-4" />
-          New Video
-        </Button>
-      </div>
+      <PageHeader
+        icon={LayoutDashboard}
+        title="Dashboard"
+        description="Videos processed, clips generated, and storage usage at a glance."
+        action={
+          <Button render={<Link to="/new" />}>
+            <PlusCircle className="size-4" />
+            New Video
+          </Button>
+        }
+      />
 
       {error && (
         <div className="mt-6 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -104,13 +108,15 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: index * 0.05 }}
               >
-                <Card>
+                <Card className="transition-shadow hover:shadow-md">
                   <CardHeader className="flex-row items-center justify-between space-y-0">
                     <CardTitle>{stat.label}</CardTitle>
-                    <Icon className="size-4 text-muted-foreground" />
+                    <span className={`flex size-9 items-center justify-center rounded-lg ${stat.tint}`}>
+                      <Icon className="size-4.5" />
+                    </span>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-2xl font-semibold tracking-tight">
+                    <p className="text-3xl font-bold tracking-tight">
                       {stat.format(stats[stat.key])}
                     </p>
                   </CardContent>

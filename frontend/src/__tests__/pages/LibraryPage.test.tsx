@@ -32,8 +32,8 @@ function buildClip(overrides: Partial<Clip> = {}): Clip {
 describe('LibraryPage', () => {
   it('renders a card for each clip returned by the API', async () => {
     const clips: Clip[] = [
-      buildClip({ id: 1, caption_text: 'A punchy highlight moment', status: 'completed' }),
-      buildClip({ id: 2, caption_text: 'Another great clip', status: 'processing' }),
+      buildClip({ id: 1, start_time: 0, end_time: 20, status: 'completed' }),
+      buildClip({ id: 2, start_time: 0, end_time: 45, status: 'processing' }),
     ];
     mockedListClips.mockResolvedValueOnce(clips);
 
@@ -43,8 +43,8 @@ describe('LibraryPage', () => {
       </MemoryRouter>
     );
 
-    expect(await screen.findByText('A punchy highlight moment')).toBeInTheDocument();
-    expect(screen.getByText('Another great clip')).toBeInTheDocument();
+    expect(await screen.findByText('Clip #1')).toBeInTheDocument();
+    expect(screen.getByText('Clip #2')).toBeInTheDocument();
     expect(screen.getByText('completed')).toBeInTheDocument();
     expect(screen.getByText('processing')).toBeInTheDocument();
     expect(mockedGetClipDownloadUrl).toHaveBeenCalledWith(1);

@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
-import { AlertCircle, Link2, Loader2, Upload } from 'lucide-react';
+import { AlertCircle, Clapperboard, Link2, Loader2, Upload } from 'lucide-react';
 import { type ChangeEvent, type DragEvent, type FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -70,12 +71,13 @@ export default function NewVideoPage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="mx-auto max-w-2xl px-4 py-12"
+      className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-12"
     >
-      <h1 className="text-2xl font-semibold tracking-tight">New Video</h1>
-      <p className="mt-2 text-muted-foreground">
-        Submit a YouTube URL or upload a video to generate clips.
-      </p>
+      <PageHeader
+        icon={Clapperboard}
+        title="New Video"
+        description="Submit a YouTube URL or upload a video to generate clips."
+      />
 
       <Card className="mt-8">
         <div className="flex gap-1 rounded-lg bg-muted p-1">
@@ -134,7 +136,7 @@ export default function NewVideoPage() {
               onDrop={handleDrop}
               className={cn(
                 'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-10 text-center transition-colors',
-                isDragging ? 'border-ring bg-muted' : 'border-border hover:bg-muted/50'
+                isDragging ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
               )}
             >
               <Upload className="size-6 text-muted-foreground" />

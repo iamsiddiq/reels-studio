@@ -20,35 +20,49 @@ const navItems: NavItem[] = [
 export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-        <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <NavLink to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <Clapperboard className="size-5 text-primary" />
-            <span>Shorts/Reels Maker</span>
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,oklch(0.541_0.281_293.009_/_12%),transparent)]"
+      />
+
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg supports-backdrop-filter:bg-background/60">
+        <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3.5 sm:px-6">
+          <NavLink to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-pink-600 text-white shadow-sm">
+              <Clapperboard className="size-4.5" />
+            </span>
+            <span className="hidden sm:inline">Shorts/Reels Maker</span>
           </NavLink>
 
-          <ul className="flex items-center gap-1">
+          <ul className="flex items-center gap-1 rounded-full bg-muted/40 p-1">
             {navItems.map((item) => (
               <li key={item.to}>
                 <NavLink
                   to={item.to}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
-                      isActive && 'bg-muted text-foreground'
+                      'relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground',
+                      isActive && 'text-white'
                     )
                   }
                 >
                   {({ isActive }) => (
-                    <motion.span
-                      className="flex items-center gap-1.5"
-                      whileHover={{ y: -1 }}
-                      whileTap={{ scale: 0.96 }}
-                      animate={{ opacity: isActive ? 1 : 0.9 }}
-                    >
-                      {item.icon}
-                      {item.label}
-                    </motion.span>
+                    <>
+                      {isActive && (
+                        <motion.span
+                          layoutId="nav-active-pill"
+                          className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-600 to-pink-600 shadow-sm"
+                          transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                        />
+                      )}
+                      <motion.span
+                        className="relative z-10 flex items-center gap-1.5"
+                        whileTap={{ scale: 0.96 }}
+                      >
+                        {item.icon}
+                        <span className="hidden sm:inline">{item.label}</span>
+                      </motion.span>
+                    </>
                   )}
                 </NavLink>
               </li>
