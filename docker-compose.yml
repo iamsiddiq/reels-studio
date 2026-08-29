@@ -1,0 +1,66 @@
+# Shorts/Reels Maker — base compose stack.
+#
+# MVP uses FastAPI BackgroundTasks for the video pipeline, NOT a task queue —
+# intentionally no Redis/Celery service here. There is also no auth service;
+# this product has no login/signup.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-shorts_reels_maker}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Always built from POSTGRES_* against the `postgres` service hostname:
+      # the DATABASE_URL in .env is for bare-metal/local dev (localhost) and
+      # would not be reachable from inside the backend container.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-shorts_reels_maker}
+      # Matches the `storage` volume mount below; overrides any host-oriented
+      # value (e.g. ./storage) that may be set in .env for bare-metal dev.
+      STORAGE_PATH: /app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Generated clips/downloaded source videos must persist across
+      # container restarts and rebuilds.
+      - storage:/app/storage
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
+  storage:
